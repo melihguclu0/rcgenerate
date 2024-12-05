@@ -45,7 +45,7 @@ final_data=$(jq -n --argjson a "$new_data" --argjson b "$old_data" '$a + $b')
 echo $final_data > commands.json
 echo
 echo "name:$command command:$path"
-echo "New command added. Now run with -i to generate and install config file"
+echo "New command added. Now you can review 'commands.json' file and then run with -i to generate and install config file"
 echo
 exit 0
 }
