@@ -22,6 +22,8 @@ dash_help()
    echo
 }
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 gen_random(){
     random=$(openssl rand -hex 16)  
     echo "$random" | sed -E 's/(.{8})(.{4})(.{4})(.{4})(.{12})/\1_\2_\3_\4_\5/'
@@ -30,7 +32,7 @@ gen_random(){
 new_command() {
 random=$(gen_random)
 
-old_data=$(cat commands.json)
+old_data=$(cat ${SCRIPT_DIR}/commands.json)
 new_data=$(cat <<EOF
     {
     "_${random}_": {
@@ -42,10 +44,10 @@ EOF
 )
 
 final_data=$(jq -n --argjson a "$new_data" --argjson b "$old_data" '$a + $b')
-echo $final_data > commands.json
+echo $final_data > ${SCRIPT_DIR}/commands.json
 echo
 echo "name:$command command:$path"
-echo "New command added. Now you can review 'commands.json' file and then run with -i to generate and install config file"
+echo "New command added. Now run with -i to generate and install config file"
 echo
 exit 0
 }
@@ -69,7 +71,7 @@ fi
 echo "Config Reset..."
 random=$(gen_random)
 #fix this double quotes
-cat <<EOF > commands.json
+cat <<EOF > ${SCRIPT_DIR}/commands.json
 {
 "_${random}_": {
     "command": "echo 'Echo' >> /dev/pts/$(ps | grep -o 'pts/.' | cut -d'/' -f2 | head -n1)",
@@ -86,7 +88,7 @@ EOF
 generate() {
     
     echo "Generating configuration file..."
-    data=$(cat commands.json)
+    data=$(cat ${SCRIPT_DIR}/commands.json)
     h=$(echo $data | sed 's/"/\\"/g')
 
     while IFS= read -r line; do
@@ -122,7 +124,7 @@ if [[ $1 = "-r"  || $1 = "--reset" ]]; then
 elif [[ $1 = "-n" || $1 = "--new" ]]; then
     
 
-    if [[ -f commands.json ]]; then
+    if [[ -f ${SCRIPT_DIR}/commands.json ]]; then
         :
     else
         echo "No config file found"
