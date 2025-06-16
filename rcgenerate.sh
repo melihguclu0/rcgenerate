@@ -43,7 +43,6 @@ new_command() {
 random=$(gen_random)
 
 read -r -a DEV <<< "$(get_dev)"
-echo ${DEV[@]}
 
 command=$(echo $command | sed 's/"/\\\"/g')
 path=$(echo $path | sed 's/"/\\\"/g')
@@ -64,8 +63,9 @@ data=$(jq -n --argjson a "$new_data" --argjson b "$old_data" '$a + $b')
 echo $data > ${SCRIPT_DIR}/commands_$i.json
 done
 echo
-echo "name:$command command:$path"
-echo "New command added. Now run with \"-s\" to install configuration file"
+echo "Added:"
+echo "name: $command"
+echo "path: $path"
 echo
 exit 0
 }
@@ -98,6 +98,8 @@ done
 read_current() {
 
 
+    echo "Reading:"
+
     read -r -a DEV <<< "$(get_dev)"
 
 for i in "${!DEV[@]}"; do
@@ -107,7 +109,9 @@ for i in "${!DEV[@]}"; do
 
     cleaned_json=$(echo "$escaped_json" | sed 's/\\"/"/g')
 
-    echo "$cleaned_json" | jq . > "./commands_${DEV[$i]}.json"
+    echo "$cleaned_json" | jq . > "${SCRIPT_DIR}/commands_${DEV[$i]}.json"
+    echo "Created file:"
+    echo "${SCRIPT_DIR}/commands_${DEV[$i]}.json"
 
 done
 
@@ -116,7 +120,8 @@ done
 }
 
 install() {
-    read -p "Warning! This will overwrite your existing configuration. Proceed? Y/N" de
+    echo
+    read -p "Warning! This will overwrite your existing configuration. Proceed? Y/N " de
 echo
 
 if [[ $de = "y" || $de = "Y" ]]; then
@@ -134,10 +139,10 @@ else
     exit 1
 fi
 
-    echo "Generating configuration file..."
     read -r -a DEV <<< "$(get_dev)"
-
+    echo "Installing:"
     for i in "${DEV[@]}"; do
+        echo "${HOME}/.config/kdeconnect/$i/kdeconnect_runcommand/config"
         data=$(cat ${SCRIPT_DIR}/commands_$i.json)
         h=$(echo $data | sed 's/"/\\\"/g')
         echo -e "[General]\ncommands=\"@ByteArray(${h})\"" > "${HOME}/.config/kdeconnect/$i/kdeconnect_runcommand/config"
