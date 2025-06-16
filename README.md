@@ -3,6 +3,10 @@
 Simple script to generate KDEConnect Run Command configuration file,
 particularly helpful for Raspberry Pi setups without a display. Using this script, you can add new commands and synchronize across all connected devices easily. 
 
+## Installing KDEConnect on Raspberry Pi OS Lite
+
+*https://melihguclu0.github.io/posts/rp-kdeconnect/*
+
 ## Requirements:
 
 `jq` Command-line JSON processor
