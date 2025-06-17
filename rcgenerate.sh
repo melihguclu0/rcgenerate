@@ -39,6 +39,56 @@ gen_random(){
     echo "$random" | sed -E 's/(.{8})(.{4})(.{4})(.{4})(.{12})/\1_\2_\3_\4_\5/'
 }
 
+
+edit() {
+
+
+    read -r -a DEV <<< "$(get_dev)"
+
+    for i in ${DEV[@]}; do
+
+    INPUT_FILE="commands_$i.json"
+    TMP_FILE="$(mktemp)"
+    OUTPUT_FILE="$INPUT_FILE"  # Aynı dosyaya yazacağız ama geçici dosya üzerinden
+
+    # ID'leri listele
+    echo
+    echo "Available entries for:"
+    echo $i
+
+    ids=($(jq -r 'keys[]' "$INPUT_FILE"))
+    echo
+    for i in "${!ids[@]}"; do
+    name=$(jq -r --arg key "${ids[$i]}" '.[$key].name' "$INPUT_FILE")
+    echo "$i) ${ids[$i]} - $name"
+    done
+
+    # Seçim al
+    echo
+    echo -n "Select the entry you wish to delete: "
+    read selection
+
+    # Kontrol
+    if [[ "$selection" =~ ^[0-9]+$ ]] && [ "$selection" -ge 0 ] && [ "$selection" -lt "${#ids[@]}" ]; then
+    selected_id="${ids[$selection]}"
+    echo "Selected: $selected_id"
+
+    # Sil -> geçici dosyaya yaz
+    jq "del(.\"$selected_id\")" "$INPUT_FILE" > "$TMP_FILE"
+
+    # Orijinal dosyayı güncelle
+    mv "$TMP_FILE" "$OUTPUT_FILE"
+    echo "Updated: $OUTPUT_FILE"
+    else
+
+        :
+    fi
+    done
+
+
+}
+
+
 new_command() {
 random=$(gen_random)
 
@@ -110,8 +160,10 @@ for i in "${!DEV[@]}"; do
     cleaned_json=$(echo "$escaped_json" | sed 's/\\"/"/g')
 
     echo "$cleaned_json" | jq . > "${SCRIPT_DIR}/commands_${DEV[$i]}.json"
+
     echo "Created file:"
     echo "${SCRIPT_DIR}/commands_${DEV[$i]}.json"
+
 
 done
 
@@ -171,6 +223,11 @@ if [[ $1 = "-r"  || $1 = "--reset" ]]; then
 elif [[ $1 = "-g" || $1 = "--get-current" ]]; then
 
     read_current
+
+elif [[ $1 = "-e" || $1 = "--edit" ]]; then
+
+    edit
+
 
 elif [[ $1 = "-n" || $1 = "--add-new" ]]; then
     
