@@ -47,7 +47,7 @@ edit() {
 
     for i in ${DEV[@]}; do
 
-    INPUT_FILE="commands_$i.json"
+    INPUT_FILE="${SCRIPT_DIR}/commands_$i.json"
     TMP_FILE="$(mktemp)"
     OUTPUT_FILE="$INPUT_FILE"  # Aynı dosyaya yazacağız ama geçici dosya üzerinden
 
